@@ -9,10 +9,10 @@ uploaded_model = st.file_uploader("Upload your trained model (.pkl)", type=["pkl
 
 if uploaded_model:
     # Load the model using pickle
-    with open("temp_model.pkl", "wb") as f:
+    with open("models'best_classification_model.pkl", "wb") as f:
         f.write(uploaded_model.getbuffer())
 
-    with open("temp_model.pkl", "rb") as f:
+    with open("models'best_classification_model.pkl", "rb") as f:
         model = pickle.load(f)
 
     st.success("Model uploaded and loaded successfully!")
