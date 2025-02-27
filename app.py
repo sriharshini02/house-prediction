@@ -1,28 +1,27 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 import pickle
-from pycaret.classification import load_model, predict_model
-from pycaret.regression import load_model as load_regressor
 
-st.title("Interactive PyCaret Model Deployment 🚀")
+st.title("Deploy Your Machine Learning Model 🚀")
 
-# Upload a PyCaret model file
-uploaded_model = st.file_uploader("Upload your PyCaret model (.pkl)", type=["pkl"])
+# Upload a trained model
+uploaded_model = st.file_uploader("Upload your trained model (.pkl)", type=["pkl"])
 
 if uploaded_model:
-    # Save and load the uploaded model
-    with open("models'best_classification_model.pkl", "wb") as f:
+    # Load the model using pickle
+    with open("temp_model.pkl", "wb") as f:
         f.write(uploaded_model.getbuffer())
 
-    model = load_model("models'best_classification_model.pkl")
+    with open("temp_model.pkl", "rb") as f:
+        model = pickle.load(f)
+
     st.success("Model uploaded and loaded successfully!")
 
     # Dynamically ask for feature inputs
     st.subheader("Enter Feature Values")
 
-    # Extract feature names from the PyCaret model
-    feature_names = list(model.feature_names_in_)  # Get expected features
+    # Get feature names from the model
+    feature_names = model.feature_names_in_  # Works with scikit-learn models
     user_inputs = {}
 
     for feature in feature_names:
@@ -30,9 +29,13 @@ if uploaded_model:
 
     # Convert input to DataFrame
     if st.button("Predict"):
-        # Convert input values to correct data types
-        input_df = pd.DataFrame([user_inputs])
+        try:
+            # Convert user inputs into DataFrame
+            input_df = pd.DataFrame([user_inputs])
+            input_df = input_df.astype(float)  # Convert input values to numeric
 
-        # Predict using PyCaret
-        predictions = predict_model(model, data=input_df)
-        st.success(f"Prediction: {predictions['prediction_label'][0]}")
+            # Make predictions
+            prediction = model.predict(input_df)
+            st.success(f"Prediction: {prediction[0]}")
+        except Exception as e:
+            st.error(f"Error in prediction: {e}")
